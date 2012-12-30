@@ -14,7 +14,7 @@ public class ColourVol extends Activity {
 
 
     MediaRecorder recorder;
-    Thread runner;
+    private volatile Thread runner;
     LinearLayout display;
 	private static final int MAX_RGB = 255;
 	private static final int MAX_AMPLITUDE = 16384;
@@ -56,6 +56,11 @@ public class ColourVol extends Activity {
         }
     }
 
+    public void stop()		//stop thread when activity closes
+    {
+    	runner = null;
+    }
+    
     public void onResume()		//manage activity stack
     {
         super.onResume();
@@ -93,12 +98,13 @@ public class ColourVol extends Activity {
             }
         }
     }
-    public void stopRecorder() {
+    public void stopRecorder() {		//stop mediarecorder
         if (recorder != null) {
             recorder.stop();       
             recorder.release();
             recorder = null;
         }
+        stop();		//stop thread
     }
 
     public int getAmplitude() {		//getAmplitude method
