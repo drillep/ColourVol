@@ -14,9 +14,9 @@ public class ColourVol extends Activity {
 
 
     MediaRecorder recorder;
-    private volatile Thread runner;
     LinearLayout display;
-	private static final int MAX_RGB = 255;
+    private volatile Thread runner;
+    private static final int MAX_RGB = 255;
 	private static final int MAX_AMPLITUDE = 16384;
 
     final Runnable updater = new Runnable(){			//create new runnable object
@@ -25,6 +25,7 @@ public class ColourVol extends Activity {
             updateBackground();
         };
     };
+    
     final Handler mHandler = new Handler();
     
     @Override
@@ -44,9 +45,9 @@ public class ColourVol extends Activity {
                     {
                         try
                         {
-                            Thread.sleep(100);			//pause thread for 100ms 
+                            Thread.sleep(50);			//pause thread for 50ms 
                             Log.i("Noise", "Tock");		//Log sleep
-                        } catch (InterruptedException e) { };	//Ignore
+                        } catch (InterruptedException e) {};	//Ignore
                         mHandler.post(updater);			//access UI thread - updater.post
                     }
                 }
@@ -55,24 +56,17 @@ public class ColourVol extends Activity {
             Log.d("Noise", "start runner()");
         }
     }
-
-    public void stop()						//stop thread when activity closes
-    {
-    	runner = null;
-    }
     
     public void onResume()					//manage activity stack
     {
         super.onResume();
         startRecorder();
-        runner.start();						//start runner (untested) *
     }
 
     public void onPause()
     {
         super.onPause();
         stopRecorder();
-        stop();							//stop thread (untested) *
     }
 
     public void startRecorder(){				//start the media recorder
