@@ -19,7 +19,7 @@ public class ColourVol extends Activity {
 	private static final int MAX_RGB = 255;
 	private static final int MAX_AMPLITUDE = 16384;
 
-    final Runnable updater = new Runnable(){		//create new runnable object
+    final Runnable updater = new Runnable(){			//create new runnable object
 
         public void run(){          
             updateBackground();
@@ -32,54 +32,56 @@ public class ColourVol extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_colour_vol);		//set ContentView to res/layout/activity_colour_vol.xml
-        display = (LinearLayout) findViewById(R.id.myDisplay);		//initialise xml linear layout
+        display = (LinearLayout) findViewById(R.id.myDisplay);	//initialise xml linear layout
 
         
-        if (runner == null)		//check if thread has been created
+        if (runner == null)					//check if thread has been created
         { 
-            runner = new Thread(){		//create thread for new runnable object
+            runner = new Thread(){				//create thread for new runnable object
                 public void run()
                 {
-                    while (runner != null)		//while thread is running
+                    while (runner != null)			//while thread is running
                     {
                         try
                         {
-                            Thread.sleep(100);		//pause thread for 50ms 
+                            Thread.sleep(100);			//pause thread for 100ms 
                             Log.i("Noise", "Tock");		//Log sleep
-                        } catch (InterruptedException e) { };		//Interrupt error handler
-                        mHandler.post(updater);
+                        } catch (InterruptedException e) { };	//Ignore
+                        mHandler.post(updater);			//access UI thread - updater.post
                     }
                 }
             };
-            runner.start();		//thread is runnable
+            runner.start();	
             Log.d("Noise", "start runner()");
         }
     }
 
-    public void stop()		//stop thread when activity closes
+    public void stop()						//stop thread when activity closes
     {
     	runner = null;
     }
     
-    public void onResume()		//manage activity stack
+    public void onResume()					//manage activity stack
     {
         super.onResume();
         startRecorder();
+        runner.start();						//start runner (untested) *
     }
 
     public void onPause()
     {
         super.onPause();
         stopRecorder();
+        stop();							//stop thread (untested) *
     }
 
-    public void startRecorder(){		//start the media recorder
+    public void startRecorder(){				//start the media recorder
         if (recorder == null)
         {
-            recorder = new MediaRecorder();		//new MediaRecorder object
+            recorder = new MediaRecorder();			//new MediaRecorder object
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);		//media source is microphone
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);		//file type compression Three_GPP
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);		//file encoding AMR_NB
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);	//file type compression Three_GPP
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);	//file encoding AMR_NB
             recorder.setOutputFile("/dev/null");		//assign the recording to a null file as we don't intend on keeping it
             try
             {           
@@ -93,32 +95,31 @@ public class ColourVol extends Activity {
            try
             {           
                 recorder.start();
-            }catch (SecurityException e) {
-                Log.e("start", "security manager check fail  " + Log.getStackTraceString(e));
+            }catch (IllegalStateException e) {
+                Log.e("start", "if called before prepare  " + Log.getStackTraceString(e));  //
             }
         }
     }
-    public void stopRecorder() {		//stop mediarecorder
+    public void stopRecorder() {				//stop mediarecorder
         if (recorder != null) {
             recorder.stop();       
             recorder.release();
             recorder = null;
         }
-        stop();		//stop thread
     }
 
-    public int getAmplitude() {		//getAmplitude method
-        if (recorder != null)		//check the mediarecorder object has been initialised			
+    public int getAmplitude() {					//getAmplitude method
+        if (recorder != null)					//check the mediarecorder object has been initialised			
             return  (recorder.getMaxAmplitude());		//return the maximum amplitude measured since the last call
         else
             return 0;
     }
     
     private void updateBackground() {							
-    	float amplF = (float) getAmplitude();		//cast integer value for MaxAmplitude into floating point
-    	int alpha = (int) (amplF / MAX_AMPLITUDE * MAX_RGB);		//calculate colour alpha value, cast value back to integer
+    	float amplF = (float) getAmplitude();			//cast integer value for MaxAmplitude into floating point
+    	int alpha = (int) (amplF / MAX_AMPLITUDE * MAX_RGB);	//calculate colour alpha value, cast value back to integer
     	
-		display.setBackgroundColor(Color.argb(alpha, 255, 000, 000));		//set linear layout background colour 
+	display.setBackgroundColor(Color.argb(alpha, 255, 000, 000));	//set linear layout background colour 
     	
     }
 }
